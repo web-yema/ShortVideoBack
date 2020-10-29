@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <button onclick="sendMessage()">Copy Text</button>
+    <button onclick="sendaa()">Copy Text</button>
+    <ul id="messages">
+    </ul>
+    <input type="text" id="name">
+</body>
+<script>
+  //建立连接
+  var ws = new WebSocket("ws://localhost:8181");
+        var nickname = "";
+        ws.onopen = function (e) {
+            console.log('Connection to server opened');
+        }
+        //显示
+        function appendLog(type, nickname, message) {
+            console.log(message)
+            if (typeof message == "undefined") return;
+            var messages = document.getElementById('messages');
+            var messageElem = document.createElement("li");
+            var preface_label;
+            if (type === 'notification') {
+                preface_label = "<span class=\"label label-info\">*</span>";
+            } else if (type == 'nick_update') {
+                preface_label = "<span class=\"label label-warning\">*</span>";
+            } else {
+                preface_label = "<span class=\"label label-success\">"
+                + nickname + "</span>";
+            }
+            var message_text = "<h2>" + preface_label + "&nbsp;&nbsp;"
+            + message + "</h2>";
+            messageElem.innerHTML = message_text;
+            messages.appendChild(messageElem);
+        }
+        //收到消息处理
+        ws.onmessage = function (e) {
+            console.log(e)
+            var data = JSON.parse(e.data);
+            nickname = data.nickname;
+            appendLog(data.type, data.nickname, data.message);
+            console.log("ID: [%s] = %s", data.id, data.message);
+        }
+        ws.onclose = function (e) {
+            appendLog("Connection closed");
+            console.log("Connection closed");
+        }
+        //发送消息
+        function sendMessage() {
+            var messageField = document.getElementById('message');
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.send(messageField.value);
+            }
+            messageField.value = '';
+            messageField.focus();
+        }
+        //修改名称
+        function changName() {
+            var name = name.value;
+            console.log(name)
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.send("/nick " + name);
+            }
+        }
+</script>
+</html>
