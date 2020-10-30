@@ -44,12 +44,12 @@ io.on('connection', (socket) => {
         socket.broadcast.emit('getMessage', content);
     });
 
-    //监听新人连接，然后广播出去
-    socket.on('newPeople', function (name) {
-        // console.log(name) //name为连接者的姓名或昵称
-        // 在这里进行数据库存储
-        socket.broadcast.emit('newPeer', name);
-    });
+    // //监听新人连接，然后广播出去
+    // socket.on('newChart', function (name) {
+    //     // console.log(name) //name为连接者的姓名或昵称
+    //     // 在这里进行数据库存储
+
+    // });
 
     // 存储函数
     function soList(params) {
@@ -72,10 +72,14 @@ io.on('connection', (socket) => {
     socket.on('private_chat', (params, fn) => {
         const receiver = users[params.receiver];
         params.createTime = moment().format('YYYY-MM-DD HH:mm:ss');
+
         if (receiver && receiver.status === USER_STATUS[0]) {
             // 在线处理
             soList(params)
+
             socket.to(users[params.receiver].socketId).emit('reply_private_chat', params);
+            // 消息提示
+            socket.to(users[params.receiver].socketId).emit('newChart', params);
         } else {
             // 可以在做些离线消息推送处理
             soList(params)
@@ -114,7 +118,6 @@ app.post('/getmessage', (req, res) => {
     })
 
 })
-
 
 
 http.listen(3031, () => {
