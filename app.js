@@ -44,6 +44,22 @@ io.on('connection', (socket) => {
         socket.broadcast.emit('getMessage', content);
     });
 
+    // 互关或取消关注
+    socket.on('friends', function (content) {
+        let {
+            followusername
+        } = content
+
+        // console.log(content); //content为收到的消息内容，包括姓名和消息内容
+        console.log(users[followusername])
+        // 在这里进行数据库读取
+        // socket.broadcast.emit('getFriends', content);
+        if (users[followusername]) {
+            socket.to(users[content.followusername].socketId).emit('getFriends');
+        }
+
+    });
+
     // //监听新人连接，然后广播出去
     // socket.on('newChart', function (name) {
     //     // console.log(name) //name为连接者的姓名或昵称
@@ -98,6 +114,7 @@ app.post('/getmessage', (req, res) => {
         username: receiver
     }).then((data) => {
         let datas = data[0]
+        console.log(lineLst[username])
         if (lineLst[username]) {
             res.json({
                 code: 200,
